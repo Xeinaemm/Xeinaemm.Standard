@@ -1,0 +1,18 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <ItemGroup>
+    <ProjectReference Include="..\Xeinaemm.AspNetCore.Api\Xeinaemm.AspNetCore.Api.csproj" />
+    <ProjectReference Include="..\Xeinaemm.AspNetCore.Data\Xeinaemm.AspNetCore.Data.csproj" />
+    <ProjectReference Include="..\Xeinaemm.AspNetCore.Identity.IdentityServer\Xeinaemm.AspNetCore.Identity.IdentityServer.csproj" />
+    <ProjectReference Include="..\Xeinaemm.AspNetCore.Swagger\Xeinaemm.AspNetCore.Swagger.csproj" />
+    <ProjectReference Include="..\Xeinaemm.AspNetCore\Xeinaemm.AspNetCore.csproj" />
+    <ProjectReference Include="..\Xeinaemm.Analyzer\Xeinaemm.Analyzer.csproj" />
+    <ProjectReference Include="..\Xeinaemm.Common\Xeinaemm.Common.csproj" />
+    <ProjectReference Include="..\Xeinaemm.Configuration.Autofac\Xeinaemm.Configuration.Autofac.csproj" />
+    <ProjectReference Include="..\Xeinaemm.Domain\Xeinaemm.Domain.csproj" />
+    <ProjectReference Include="..\Xeinaemm.Hateoas\Xeinaemm.Hateoas.csproj" />
+    <ProjectReference Include="..\Xeinaemm.Quartz\Xeinaemm.Quartz.csproj" />
+    <ProjectReference Include="..\Xeinaemm.Tests.Common\Xeinaemm.Tests.Common.csproj" />
+  </ItemGroup>
+
+</Project>

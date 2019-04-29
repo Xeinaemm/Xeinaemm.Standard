@@ -1,0 +1,46 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+
+  <Import Project="DeploymentSettings.props" />
+
+  <PropertyGroup>
+    <Company>Xeinaemm</Company>
+    <Authors>$(Company)</Authors>
+    <Copyright>Copyright © $(Company) $([System.DateTime]::Now.Year)</Copyright>
+    <Trademark>$(Company)™</Trademark>
+    <Product>$(Company) Projects</Product>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <LangVersion>latest</LangVersion>
+    <NoWarn>1591;1701;1702;8032;NU1701;AD0001</NoWarn>
+    <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
+    <CodeAnalysisRuleSet>..\..\Xeinaemm.ruleset</CodeAnalysisRuleSet>
+    <Deterministic>true</Deterministic>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <AdditionalFiles Include="..\..\stylecop.json" Visible="false" />
+    <None Include="..\..\Xeinaemm.ruleset" Visible="false" />
+    <None Include="..\..\.editorconfig" Visible="false" />
+    <None Include="content\*" Pack="true" PackagePath="content" />
+    <None Include="build\*" Pack="true" PackagePath="build" />
+    <None Include="lib\*" Pack="true" PackagePath="lib" />
+  </ItemGroup>
+
+  <Choose>
+    <When Condition="!Exists('$(MSBuildProjectDirectory)\packages.config')">
+      <PropertyGroup>
+        <RestoreProjectStyle>PackageReference</RestoreProjectStyle>
+      </PropertyGroup>
+    </When>
+  </Choose>
+
+  <Choose>
+    <When Condition="!Exists('$(MSBuildProjectDirectory)\packages.config') and '$(IsSharedLibrary)' == 'false'">
+      <ItemGroup>
+        <PackageReference Include="Xeinaemm.All" Version="1.0.0" PrivateAssets="All" />
+      </ItemGroup>
+    </When>
+  </Choose>
+</Project>

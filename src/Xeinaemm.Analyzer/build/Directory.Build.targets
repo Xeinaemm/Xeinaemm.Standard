@@ -1,0 +1,46 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+
+  <PropertyGroup Label="Scripts">
+    <PowerShell>powershell -NoProfile -ExecutionPolicy Unrestricted -command</PowerShell>
+    <Pack>dotnet pack &quot;$(MSBuildProjectDirectory)\$(ProjectFileName)&quot; --no-build -o $(NugetDestinationFolder) -c Release</Pack>
+    <Migrate>$(PowerShell) dotnet tool install --global Project2015To2017.Migrate2017.Tool %26 dotnet migrate-2017 migrate $(MSBuildProjectDirectory) -n -a -t net48</Migrate>
+    <FindLatestNugetPackage>&quot;[System.IO.Directory]::GetFiles(%27$(NugetDestinationFolder)%27, %27Xeinaemm.Analyzer%2A%27) | Select-String %27[0-9]+.[0-9]+.[0-9]+%27 | %25%25{ %24_.Matches.Value } | Select-Object -Last 1&quot;</FindLatestNugetPackage>
+  </PropertyGroup>
+
+  <Target Name="BeforeBuild" Condition="$(DownloadFiles) == 'true'">
+    <Exec Condition="Exists('$(NuGetPackageRoot)Xeinaemm.Analyzer') and '$(IsSharedLibrary)' == 'false'" ConsoleToMsBuild="true" Command="$(PowerShell) $(FindLatestNugetPackage)">
+      <Output TaskParameter="ConsoleOutput" PropertyName="AnalyzerPackageVersion" />
+    </Exec>
+
+    <ItemGroup Condition="Exists('$(NuGetPackageRoot)Xeinaemm.Analyzer') and '$(IsSharedLibrary)' == 'false'">
+      <ContentToCopy Include="$(NuGetPackageRoot)Xeinaemm.Analyzer\$(AnalyzerPackageVersion)\content\*.*" />
+      <BuildToCopy Include="$(NuGetPackageRoot)Xeinaemm.Analyzer\$(AnalyzerPackageVersion)\build\*.*" />
+    </ItemGroup>
+
+    <ItemGroup Condition="'$(IsSharedLibrary)' == 'true'">
+      <ContentToCopy Include="$(MSBuildProjectDirectory)\content\*.*" />
+      <BuildToCopy Include="$(MSBuildProjectDirectory)\build\*.*" />
+    </ItemGroup>
+
+    <Copy SourceFiles="@(ContentToCopy)" DestinationFiles="@(ContentToCopy ->'$(SolutionDir)\%(RecursiveDir)%(Filename)%(Extension)')" />
+    <Copy SourceFiles="@(BuildToCopy)" DestinationFiles="@(BuildToCopy ->'$(SolutionDir)\%(RecursiveDir)%(Filename)%(Extension)')" />
+  </Target>
+
+  <Target Name="Clean" Condition="Exists('$(MSBuildProjectDirectory)\Properties\AssemblyInfo.cs') and $(MigrateProjects) == 'true'">
+    <Exec Command="$(Migrate)"/>
+    <RemoveDir Directories="$(MSBuildProjectDirectory)\Properties\AssemblyInfo.cs" Condition="!Exists('$(MSBuildProjectDirectory)\packages.config')" />
+  </Target>
+
+  <Target Name="AfterBuild" Condition="Exists('$(MSBuildProjectDirectory)\nswag.json')">
+    <Copy SourceFiles="@(ReferencePath)" DestinationFolder="$(OutDir)References" />
+    <Exec Command="$(NSwagExe_Core22) aspnetcore2swagger /assembly:$(MSBuildProjectDirectory)/bin/$(Configuration)/$(TargetFramework)/$(AssemblyName).dll /output:$(MSBuildProjectDirectory)/wwwroot/v1/swagger.json" />
+    <Exec Command="$(NSwagExe_Core22) run nswag.json /variables:Configuration=$(Configuration),OutDir=$(OutDir)" />
+    <RemoveDir Directories="$(OutDir)References" />
+  </Target>
+
+  <Target Name="PackNugets" AfterTargets="AfterBuild" Condition="!Exists('$(MSBuildProjectDirectory)\packages.config') and '$(DeployNugetPackages)'=='true'">
+    <Exec Command="$(Pack)"/>
+  </Target>
+
+</Project>

@@ -1,0 +1,12 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="src\Xeinaemm.Sdk\Sdk\Sdk.props" />
+  
+  <PropertyGroup>
+    <TargetFramework>netcoreapp3.1</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup Condition="'$(MSBuildProjectName)' != 'Xeinaemm.Analyzer' and '$(MSBuildProjectName)' != '_build'">
+    <ProjectReference Include="..\Xeinaemm.Analyzer\Xeinaemm.Analyzer.csproj" />
+  </ItemGroup>
+</Project>

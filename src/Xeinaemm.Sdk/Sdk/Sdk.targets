@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  
+  <ItemGroup Condition="Exists('$(MSBuildProjectDirectory)\Program.cs')">
+    <Compile Update="**\*.Designer.cs" DependentUpon="$([System.IO.Path]::ChangeExtension($([System.IO.Path]::GetFileNameWithoutExtension(%(Identity))), '.cs'))" />
+  </ItemGroup>
+
+  <ItemGroup Condition="!Exists('$(MSBuildProjectDirectory)\Program.cs')">
+    <EmbeddedResource Update="**\*.resx" Generator="PublicResXFileCodeGenerator" LastGenOutput="%(Filename).Designer.cs" />
+    <Compile Update="**\*.Designer.cs" DesignTime="True" AutoGen="True" DependentUpon="$([System.IO.Path]::ChangeExtension($([System.IO.Path]::GetFileNameWithoutExtension(%(Identity))), '.resx'))" />
+  </ItemGroup>
+
+  <ItemGroup Label="Generators">
+    <None Update="Settings.settings" LastGenOutput="Settings.Designer.cs" Generator="SettingsSingleFileGenerator" />
+    <Compile Update="Settings.Designer.cs" AutoGen="True" DependentUpon="Settings.settings" />
+
+    <Page Include="**\*.xaml" SubType="Designer" Generator="MSBuild:Compile" LastGenOutput="%(Filename).xaml.cs" Exclude="App.xaml" />
+    <Compile Update="**\*.xaml.cs" SubType="Designer" DependentUpon="$([System.IO.Path]::ChangeExtension($([System.IO.Path]::GetFileNameWithoutExtension(%(Identity))), '.xaml'))" />
+
+    <EmbeddedResource Include="**\*.xml" />
+    <EmbeddedResource Include="**\*.xlsx" />
+    <EmbeddedResource Include="**\*.cshtml" />
+    <EmbeddedResource Include="**\*.png" />
+
+    <None Remove="bin\**" />
+    <None Remove="obj\**" />
+    <None Remove="testhost.dll" />
+    <None Remove="testhost.exe" />
+
+    <None Update="**\*.feature" Generator="SpecFlowSingleFileGenerator" LastGenOutput="%(Filename).feature.cs" />
+    <Compile Update="**\*.feature.cs" DesignTime="True" AutoGen="True" DependentUpon="$([System.IO.Path]::ChangeExtension($([System.IO.Path]::GetFileNameWithoutExtension(%(Identity))), '.feature'))" />
+  
+    <Reference Include="lib\$(TargetFramework)\*.dll" HintPath="%(FilePath)" Condition="$(ExcludeLibReferences) != true" />
+  </ItemGroup>
+  
+  <ItemGroup Condition="Exists('$(MSBuildProjectDirectory)\App.xaml')">
+    <ApplicationDefinition Include="App.xaml" Generator="MSBuild:Compile" SubType="Designer" />
+  </ItemGroup>
+
+  <ItemGroup Condition="Exists('$(MSBuildProjectDirectory)\App.config')">
+    <Content Include="App.config" SubType="Designer" />
+  </ItemGroup>
+
+  <ItemGroup Condition="Exists('$(MSBuildProjectDirectory)\App.config') and Exists('$(MSBuildProjectDirectory)\App.Debug.config')">
+    <Content Include="App.Debug.config" DependentUpon="App.config" />
+  </ItemGroup>
+
+  <ItemGroup Condition="Exists('$(MSBuildProjectDirectory)\App.config') and Exists('$(MSBuildProjectDirectory)\App.Release.config')">
+    <Content Include="App.Release.config" DependentUpon="App.config" />
+  </ItemGroup>
+  
+  <PropertyGroup Condition="$(MSBuildProjectName.Contains('Application')) or $(MSBuildProjectName.EndsWith('Tests')) or '$(OutputType)' == 'Exe' or '$(OutputType)' == 'WinExe'">
+    <IsPackable>False</IsPackable>
+  </PropertyGroup>
+  
+  <Target Name="CopyDepsFiles" AfterTargets="Build" Condition="'$(TargetFramework)'!=''">
+    <ItemGroup>
+      <DepsFilePaths Include="$([System.IO.Path]::ChangeExtension('%(_ResolvedProjectReferencePaths.FullPath)', '.deps.json'))" />
+    </ItemGroup>
+    <Copy SourceFiles="%(DepsFilePaths.FullPath)" DestinationFolder="$(OutputPath)" Condition="Exists('%(DepsFilePaths.FullPath)')" />
+  </Target>
+  
+  <Target Name="DebugEnsureNodeEnv" BeforeTargets="Build" Condition=" '$(Configuration)' == 'Debug' And Exists('$(MSBuildProjectDirectory)\$(SpaRoot)')">
+    <Exec Command="node --version" ContinueOnError="true">
+      <Output TaskParameter="ExitCode" PropertyName="ErrorCode" />
+    </Exec>
+    <Error Condition="'$(ErrorCode)' != '0'" Text="Node.js is required to build and run this project. To continue, please install Node.js from https://nodejs.org/, and then restart your command prompt or IDE." />
+    <Message Importance="high" Text="Restoring dependencies using 'npm'. This may take several minutes..." />
+    <Exec WorkingDirectory="$(SpaRoot)" Command="npm install" />
+  </Target>
+
+  <Target Name="PublishRunWebpack" AfterTargets="ComputeFilesToPublish" Condition="Exists('$(MSBuildProjectDirectory)\$(SpaRoot)')">
+    <Exec WorkingDirectory="$(SpaRoot)" Command="npm install" />
+    <Exec WorkingDirectory="$(SpaRoot)" Command="npm run build -- --prod" />
+    <Exec WorkingDirectory="$(SpaRoot)" Command="npm run build:ssr -- --prod" Condition=" '$(BuildServerSideRenderer)' == 'true' " />
+
+    <ItemGroup>
+      <DistFiles Include="$(SpaRoot)dist\**; $(SpaRoot)dist-server\**" />
+      <DistFiles Include="$(SpaRoot)node_modules\**" Condition="'$(BuildServerSideRenderer)' == 'true'" />
+      <ResolvedFileToPublish Include="@(DistFiles->'%(FullPath)')" Exclude="@(ResolvedFileToPublish)">
+        <RelativePath>%(DistFiles.Identity)</RelativePath>
+        <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+      </ResolvedFileToPublish>
+    </ItemGroup>
+  </Target>
+  
+  <Target Name="CopyLinkedContentFiles" BeforeTargets="Build">
+    <Copy SourceFiles="%(Content.Identity)"
+          DestinationFiles="%(Content.Link)"
+          SkipUnchangedFiles='true'
+          OverwriteReadOnlyFiles='true'
+          Condition="'%(Content.Link)' != ''" />
+  </Target>
+  
+</Project>

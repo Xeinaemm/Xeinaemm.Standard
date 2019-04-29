@@ -1,0 +1,61 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  
+  <PropertyGroup Label="NuspecSettings">
+    <Company>Xeinaemm</Company>
+    <Authors>$(Company)</Authors>
+    <Copyright>Copyright © $(Company) $([System.DateTime]::Now.Year)</Copyright>
+    <Trademark>$(Company)™</Trademark>
+    <Product>$(Company) Projects</Product>
+  </PropertyGroup>
+
+  <PropertyGroup Label="ProjectsSetup">
+    <LangVersion>latest</LangVersion>
+    <TypeScriptToolsVersion>Latest</TypeScriptToolsVersion>
+    <TypeScriptCompileBlocked>true</TypeScriptCompileBlocked>
+    <SpaRoot>ClientApp\</SpaRoot>
+    <BuildServerSideRenderer>false</BuildServerSideRenderer>
+    <DefaultItemExcludes>$(DefaultItemExcludes);$(SpaRoot)node_modules\**\*</DefaultItemExcludes>
+    <NoWarn>1591;1701;1702;8032;NU1701;AD0001;NU5128;NU1603</NoWarn>
+    <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
+    <Deterministic>true</Deterministic>
+    <RestoreIgnoreFailedSource>true</RestoreIgnoreFailedSource>
+    <RestoreProjectStyle>PackageReference</RestoreProjectStyle>
+  </PropertyGroup>
+
+  <ItemGroup Label="NuGetFolders">
+    <None Include="content\**\*" Pack="true" PackagePath="content" />
+    <None Include="build\**\*" Pack="true" PackagePath="build" />
+    <None Include="lib\**\*" Pack="true" PackagePath="lib" />
+    <None Include="Sdk\**\*" Pack="true" PackagePath="Sdk" />
+  </ItemGroup>
+  
+  <PropertyGroup Label="ConfigFiles">
+    <DeploymentSettingsFile Condition=" '$(DeploymentSettingsFile)' == '' ">$([MSBuild]::GetPathOfFileAbove('Deployment.Settings.props', $(MSBuildProjectDirectory)))</DeploymentSettingsFile>
+    <RulesetFile Condition=" '$(RulesetFile)' == '' ">$([MSBuild]::GetPathOfFileAbove('.ruleset', $(MSBuildProjectDirectory)))</RulesetFile>
+    <StyleCopFile Condition=" '$(StyleCopFile)' == '' ">$([MSBuild]::GetPathOfFileAbove('stylecop.json', $(MSBuildProjectDirectory)))</StyleCopFile>
+    <EditorConfigFile Condition=" '$(EditorConfigFile)' == '' ">$([MSBuild]::GetPathOfFileAbove('.editorconfig', $(MSBuildProjectDirectory)))</EditorConfigFile>
+    <CodeAnalysisRuleSet>$(RulesetFile)</CodeAnalysisRuleSet>
+  </PropertyGroup>
+
+  <ItemGroup Label="ConfigFiles">
+    <AdditionalFiles Condition="Exists('$(RulesetFile)')" Include="$(RulesetFile)" Visible="false" />
+    <AdditionalFiles Condition="Exists('$(StyleCopFile)')" Include="$(StyleCopFile)" Visible="false" />
+    <None Condition="Exists('$(EditorConfigFile)')" Include="$(EditorConfigFile)" Visible="false" />
+  </ItemGroup>
+
+  <ItemGroup Condition="Exists('$(MSBuildProjectDirectory)\$(SpaRoot)')">
+    <Content Update="wwwroot\**\*;Views\**\*;Areas\**\Views;appsettings.json;web.config">
+      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+    </Content>
+
+    <Content Remove="$(SpaRoot)**" />
+    <None Remove="$(SpaRoot)**" />
+    <None Include="$(SpaRoot)**" Exclude="$(SpaRoot)node_modules\**" />
+  </ItemGroup>
+  
+  <ItemGroup Condition="Exists('$(MSBuildProjectDirectory)\xunit.runner.json')">
+    <None Update="xunit.runner.json" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+
+</Project>
